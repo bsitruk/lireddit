@@ -1,0 +1,9 @@
+{
+  "type": "postgres",
+  "url": "postgresql://postgres:postgres@127.0.0.1:5432/lireddit",
+  "entities": ["dist/entities/*.js"],
+  "migrations": ["dist/migrations/*.js"],
+  "cli": {
+    "migrationsDir": "src/migrations"
+  }
+}
