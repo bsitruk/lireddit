@@ -1,0 +1,8 @@
+fragment userResponseFields on UserResponse {
+  user {
+    ...userFields
+  }
+  errors {
+    ...errorFields
+  }
+}

@@ -1,0 +1,4 @@
+fragment errorFields on FieldError {
+  field
+  message
+}

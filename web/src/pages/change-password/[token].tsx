@@ -1,11 +1,21 @@
-import { Button } from "@chakra-ui/react";
+import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  AlertTitle,
+  Box,
+  Button,
+  Link,
+} from "@chakra-ui/react";
+import NextLink from "next/link";
 import { Formik, Form } from "formik";
-import { useRouter } from "next/router";
+import { useState } from "react";
 import * as Yup from "yup";
 import InputField from "../../components/InputField";
 import Wrapper from "../../components/Wrapper";
-import { useLoginMutation } from "../../generated/graphql";
+import { useChangePasswordMutation } from "../../generated/graphql";
 import { toErrorMap } from "../../utils/toErrorMap";
+import { useTypedRouter } from "../../utils/useTypedRouter";
 
 export type ChangePasswordProps = {};
 
@@ -14,14 +24,14 @@ const ChangePasswordSchema = Yup.object().shape({
 });
 
 export const ChangePassword: React.FC<ChangePasswordProps> = ({}) => {
-  const router = useRouter();
+  const router = useTypedRouter<{ token: string }>();
   const { token } = router.query;
-  console.log("🚀 ~ file: [token].tsx ~ line 19 ~ token", token);
+  const [tokenError, setTokenError] = useState("");
 
-  const [login] = useLoginMutation({
+  const [changePassword] = useChangePasswordMutation({
     update: (cache, { data }) => {
-      if (data?.login.errors) return;
-      const userId = cache.identify(data?.login.user!)!;
+      if (data?.changePassword.errors) return;
+      const userId = cache.identify(data?.changePassword.user!)!;
       cache.modify({
         fields: {
           me(_, { toReference }) {
@@ -35,16 +45,23 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({}) => {
   return (
     <Wrapper variant="small">
       <Formik
-        initialValues={{ usernameOrEmail: "", password: "" }}
+        initialValues={{ password: "" }}
         validationSchema={ChangePasswordSchema}
-        onSubmit={async (values, { setErrors }) => {
-          console.log(JSON.stringify(values, null, 2));
-          const resp = await login({
-            variables: values,
+        onSubmit={async ({ password }, { setErrors }) => {
+          const resp = await changePassword({
+            variables: { token, password },
           });
-          if (resp.data?.login.errors) {
-            setErrors(toErrorMap(resp.data.login.errors));
-          } else if (resp.data?.login.user) {
+          if (resp.data?.changePassword.errors) {
+            // Error Handling
+            const errorMap = toErrorMap(resp.data.changePassword.errors);
+            if ("token" in errorMap) {
+              setTokenError(errorMap.token);
+            }
+            if ("password" in errorMap) {
+              setErrors(errorMap);
+            }
+          } else if (resp.data?.changePassword.user) {
+            // Success
             router.push("/");
           }
         }}
@@ -57,6 +74,19 @@ export const ChangePassword: React.FC<ChangePasswordProps> = ({}) => {
               placeholder="Your new password"
               type="password"
             />
+            {tokenError && (
+              <Box mt={4}>
+                <Alert status="error">
+                  <AlertIcon />
+                  <AlertTitle>{tokenError.toUpperCase()}</AlertTitle>
+                  <AlertDescription>
+                    <NextLink href="/forgot-password">
+                      <Link>Go forget your password</Link>
+                    </NextLink>
+                  </AlertDescription>
+                </Alert>
+              </Box>
+            )}
             <Button
               type="submit"
               isLoading={isSubmitting}
