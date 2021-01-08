@@ -1,11 +1,13 @@
-import { Box, Button } from "@chakra-ui/react";
+import { Box, Button, Flex, Link } from "@chakra-ui/react";
 import { Formik, Form } from "formik";
 import { useRouter } from "next/router";
+import NextLink from "next/link";
 import * as Yup from "yup";
 import InputField from "../components/InputField";
 import Wrapper from "../components/Wrapper";
 import { useLoginMutation } from "../generated/graphql";
 import { toErrorMap } from "../utils/toErrorMap";
+import React from "react";
 
 export type LoginProps = {};
 
@@ -62,6 +64,11 @@ export const Login: React.FC<LoginProps> = ({}) => {
                 type="password"
               />
             </Box>
+            <Flex mt={2} justifyContent="flex-end">
+              <NextLink href="/forgot-password">
+                <Link>Forgot Password ?</Link>
+              </NextLink>
+            </Flex>
             <Button
               type="submit"
               isLoading={isSubmitting}
