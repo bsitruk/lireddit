@@ -1,6 +1,8 @@
-import { Spinner } from "@chakra-ui/react";
+import { Link, Spinner } from "@chakra-ui/react";
 import { GetStaticProps } from "next";
-import NavBar from "../components/NavBar";
+import NextLink from "next/link";
+import React from "react";
+import Layout from "../components/Layout";
 import { PostsDocument, usePostsQuery } from "../generated/graphql";
 import { addApolloState, initializeApollo } from "../utils/apolloClient";
 
@@ -8,9 +10,10 @@ export default function Index() {
   const { data, loading } = usePostsQuery();
 
   return (
-    <>
-      <NavBar />
-      <div>hello world</div>
+    <Layout>
+      <NextLink href="/create-post">
+        <Link>Create Post</Link>
+      </NextLink>
       <div>
         {loading ? (
           <Spinner />
@@ -18,7 +21,7 @@ export default function Index() {
           data?.posts.map((post) => <p key={post.id}>{post.title}</p>)
         )}
       </div>
-    </>
+    </Layout>
   );
 }
 
