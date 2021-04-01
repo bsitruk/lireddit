@@ -7,7 +7,7 @@ import { PostsDocument, usePostsQuery } from "../generated/graphql";
 import { addApolloState, initializeApollo } from "../utils/apolloClient";
 
 export default function Index() {
-  const { data, loading } = usePostsQuery();
+  const { data, loading } = usePostsQuery({ variables: { limit: 10 } });
 
   return (
     <Layout>
@@ -29,6 +29,7 @@ export const getStaticProps: GetStaticProps = async () => {
   const apolloClient = initializeApollo();
   await apolloClient.query({
     query: PostsDocument,
+    variables: { limit: 10 },
   });
 
   return addApolloState(apolloClient, {
