@@ -1,10 +1,12 @@
 import {
   Arg,
   Ctx,
+  FieldResolver,
   Int,
   Mutation,
   Query,
   Resolver,
+  Root,
   UseMiddleware,
 } from "type-graphql";
 import { getRepository } from "typeorm";
@@ -13,20 +15,25 @@ import { isAuth } from "../middlewares/isAuth";
 import { MyContext } from "../types";
 import { PostInput } from "../types/post";
 
-@Resolver()
+@Resolver(() => Post)
 export class PostResolver {
+  @FieldResolver(() => String)
+  textSnippet(@Root() root: Post): string {
+    return root.text.slice(0, 50);
+  }
+
   @Query(() => [Post])
   async posts(
     @Arg("limit", () => Int) limit: number,
-    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
+    @Arg("cursor", () => Int, { nullable: true }) cursor: number | null
   ): Promise<Post[]> {
     const realLimit = Math.min(50, limit);
     const qb = getRepository(Post)
       .createQueryBuilder("p")
-      .orderBy("p.createdAt", "DESC")
+      .orderBy("p.id", "DESC")
       .take(realLimit);
     if (cursor) {
-      qb.where("p.createdAt < :cursor", { cursor });
+      qb.where("p.id < :cursor", { cursor });
     }
     return await qb.getMany();
   }

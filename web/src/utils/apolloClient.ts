@@ -15,7 +15,20 @@ function createApolloClient() {
   return new ApolloClient({
     uri: "http://127.0.0.1:4000/graphql",
     credentials: "include",
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      typePolicies: {
+        Query: {
+          fields: {
+            posts: {
+              keyArgs: false,
+              merge(existing = [], incoming) {
+                return [...existing, ...incoming];
+              },
+            },
+          },
+        },
+      },
+    }),
   });
 }
 
