@@ -17,37 +17,42 @@ import { addApolloState, initializeApollo } from "../utils/apolloClient";
 
 export default function Index() {
   const { data, loading, fetchMore } = usePostsQuery({
-    variables: { limit: 5 },
+    variables: { limit: 10 },
     notifyOnNetworkStatusChange: true,
   });
 
+  const { posts = [], hasMore = false } = data?.posts || {};
+
   let Body;
-  if (!loading && !data?.posts) {
+  if (!loading && !posts.length) {
     Body = <Text>There's no Posts to display</Text>;
-  } else if (loading && !data?.posts) {
+  } else if (loading && !posts.length) {
     Body = <Spinner />;
   } else {
     Body = (
       <>
         <Stack spacing={8}>
-          {data?.posts.map((post) => (
+          {posts.map((post) => (
             <Box key={post.id} p={5} shadow="md" borderWidth={1}>
               <Heading fontSize="xl">{post.title}</Heading>
               <Text mt={4}>{post.textSnippet}</Text>
             </Box>
           ))}
         </Stack>
+
         <Flex my={8} justifyContent="center">
-          <Button
-            isLoading={loading}
-            onClick={() =>
-              fetchMore({
-                variables: { cursor: data?.posts[data.posts.length - 1].id },
-              })
-            }
-          >
-            Load More
-          </Button>
+          {hasMore && (
+            <Button
+              isLoading={loading}
+              onClick={() =>
+                fetchMore({
+                  variables: { cursor: posts[posts.length - 1].id },
+                })
+              }
+            >
+              Load More
+            </Button>
+          )}
         </Flex>
       </>
     );
@@ -70,7 +75,7 @@ export const getStaticProps: GetStaticProps = async () => {
   const apolloClient = initializeApollo();
   await apolloClient.query({
     query: PostsDocument,
-    variables: { limit: 5 },
+    variables: { limit: 10 },
   });
 
   return addApolloState(apolloClient, {

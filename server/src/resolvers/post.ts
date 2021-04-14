@@ -13,7 +13,7 @@ import { getRepository } from "typeorm";
 import { Post } from "../entities/Post";
 import { isAuth } from "../middlewares/isAuth";
 import { MyContext } from "../types";
-import { PostInput } from "../types/post";
+import { PaginatedPosts, PostInput } from "../types/post";
 
 @Resolver(() => Post)
 export class PostResolver {
@@ -22,12 +22,12 @@ export class PostResolver {
     return root.text.slice(0, 50);
   }
 
-  @Query(() => [Post])
+  @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
     @Arg("cursor", () => Int, { nullable: true }) cursor: number | null
-  ): Promise<Post[]> {
-    const realLimit = Math.min(50, limit);
+  ): Promise<PaginatedPosts> {
+    const realLimit = Math.min(50, limit) + 1;
     const qb = getRepository(Post)
       .createQueryBuilder("p")
       .orderBy("p.id", "DESC")
@@ -35,7 +35,12 @@ export class PostResolver {
     if (cursor) {
       qb.where("p.id < :cursor", { cursor });
     }
-    return await qb.getMany();
+
+    const posts = await qb.getMany();
+    const hasMore = posts.length === realLimit;
+    if (hasMore) posts.pop();
+
+    return { posts, hasMore };
   }
 
   @Query(() => Post, { nullable: true })

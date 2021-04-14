@@ -14,6 +14,7 @@ let apolloClient: ApolloClient<NormalizedCacheObject>;
 function createApolloClient() {
   return new ApolloClient({
     uri: "http://127.0.0.1:4000/graphql",
+    connectToDevTools: typeof window !== "undefined",
     credentials: "include",
     cache: new InMemoryCache({
       typePolicies: {
@@ -21,8 +22,10 @@ function createApolloClient() {
           fields: {
             posts: {
               keyArgs: false,
-              merge(existing = [], incoming) {
-                return [...existing, ...incoming];
+              merge(existing = {}, incoming) {
+                const existingPosts = existing?.posts || [];
+                const mergedPosts = [...existingPosts, ...incoming.posts];
+                return { posts: mergedPosts, hasMore: incoming.hasMore };
               },
             },
           },
