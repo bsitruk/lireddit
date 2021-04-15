@@ -9,8 +9,9 @@ import {
   Root,
   UseMiddleware,
 } from "type-graphql";
-import { getRepository } from "typeorm";
+import { getRepository, getConnection } from "typeorm";
 import { Post } from "../entities/Post";
+import { Updoot } from "../entities/Updoot";
 import { isAuth } from "../middlewares/isAuth";
 import { MyContext } from "../types";
 import { PaginatedPosts, PostInput } from "../types/post";
@@ -22,6 +23,28 @@ export class PostResolver {
     return root.text.slice(0, 50);
   }
 
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async vote(
+    @Arg("postId", () => Int) postId: number,
+    @Arg("value", () => Int) value: number,
+    @Ctx() { req }: MyContext
+  ): Promise<boolean> {
+    const isUpdoot = value !== -1;
+    const realValue = isUpdoot ? 1 : -1;
+    const userId = req.session?.userId;
+    const updoot = Updoot.create({
+      userId,
+      postId,
+      value: realValue,
+    });
+    await getConnection().transaction(async (manager) => {
+      await manager.save(updoot);
+      await manager.increment(Post, { id: postId }, "points", realValue);
+    });
+    return true;
+  }
+
   @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
@@ -30,6 +53,7 @@ export class PostResolver {
     const realLimit = Math.min(50, limit) + 1;
     const qb = getRepository(Post)
       .createQueryBuilder("p")
+      .leftJoinAndSelect("p.author", "author")
       .orderBy("p.id", "DESC")
       .take(realLimit);
     if (cursor) {

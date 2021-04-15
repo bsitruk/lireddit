@@ -1,4 +1,12 @@
-import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
+import {
+  Arg,
+  Ctx,
+  FieldResolver,
+  Mutation,
+  Query,
+  Resolver,
+  Root,
+} from "type-graphql";
 import type { FindConditions } from "typeorm";
 import { v4 as uuidv4 } from "uuid";
 import { User } from "../entities/User";
@@ -10,8 +18,17 @@ import { UsernamePasswordInput, UserResponse } from "../types/user";
 import { buildError } from "../utils/buildError";
 import { validatePassword, validateRegister } from "../validators/user";
 
-@Resolver()
+@Resolver(() => User)
 export class UserResolver {
+  @FieldResolver(() => String)
+  email(@Root() root: User, @Ctx() { req }: MyContext): string {
+    // Only the user should be able to see it's own email.
+    if (root.id === req.session?.userId) {
+      return root.email;
+    }
+    return "";
+  }
+
   @Mutation(() => UserResponse)
   async changePassword(
     @Ctx() { redis, req }: MyContext,
