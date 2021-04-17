@@ -16,7 +16,13 @@ const PostSchema = Yup.object().shape({
 export const CreatePost: React.FC<{}> = ({}) => {
   const router = useRouter();
   useIsAuth();
-  const [createPost] = useCreatePostMutation();
+
+  const [createPost] = useCreatePostMutation({
+    update: (cache) => {
+      cache.evict({ fieldName: "posts" });
+      cache.gc();
+    },
+  });
 
   return (
     <Layout variant="small">

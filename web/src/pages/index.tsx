@@ -36,6 +36,9 @@ export default function Index() {
             <Box key={post.id} p={5} shadow="md" borderWidth={1}>
               <Heading fontSize="xl">{post.title}</Heading>
               <Text mt={4}>{post.textSnippet}</Text>
+              <Text mt={4} textColor="gray.500" fontStyle="italic">
+                posted by {post.author.username}
+              </Text>
             </Box>
           ))}
         </Stack>

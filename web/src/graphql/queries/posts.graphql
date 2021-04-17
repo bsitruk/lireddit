@@ -4,6 +4,10 @@ query Posts($limit: Int!, $cursor: Int) {
       id
       title
       textSnippet
+      author {
+        id
+        username
+      }
     }
     hasMore
   }
