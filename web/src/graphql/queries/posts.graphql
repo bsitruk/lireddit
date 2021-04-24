@@ -4,6 +4,7 @@ query Posts($limit: Int!, $cursor: Int) {
       id
       title
       textSnippet
+      points
       author {
         id
         username

@@ -1,8 +1,10 @@
+import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
   Flex,
   Heading,
+  IconButton,
   Link,
   Spinner,
   Stack,
@@ -33,13 +35,34 @@ export default function Index() {
       <>
         <Stack spacing={8}>
           {posts.map((post) => (
-            <Box key={post.id} p={5} shadow="md" borderWidth={1}>
-              <Heading fontSize="xl">{post.title}</Heading>
-              <Text mt={4}>{post.textSnippet}</Text>
-              <Text mt={4} textColor="gray.500" fontStyle="italic">
-                posted by {post.author.username}
-              </Text>
-            </Box>
+            <Flex key={post.id} p={5} shadow="md" borderWidth={1}>
+              <Flex
+                flexDirection="column"
+                mr={4}
+                justifyContent="space-around"
+                alignItems="center"
+                flexShrink={0}
+              >
+                <IconButton
+                  aria-label="Up vote"
+                  icon={<ChevronUpIcon />}
+                ></IconButton>
+                <Text fontSize="lg" fontWeight="bold">
+                  {post.points}
+                </Text>
+                <IconButton
+                  aria-label="Down vote"
+                  icon={<ChevronDownIcon />}
+                ></IconButton>
+              </Flex>
+              <Box>
+                <Heading fontSize="xl">{post.title}</Heading>
+                <Text mt={4}>{post.textSnippet}</Text>
+                <Text mt={4} textColor="gray.500" fontStyle="italic">
+                  posted by {post.author.username}
+                </Text>
+              </Box>
+            </Flex>
           ))}
         </Stack>
 
