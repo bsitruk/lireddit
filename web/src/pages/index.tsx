@@ -1,10 +1,7 @@
-import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 import {
-  Box,
   Button,
   Flex,
   Heading,
-  IconButton,
   Link,
   Spinner,
   Stack,
@@ -14,6 +11,7 @@ import { GetStaticProps } from "next";
 import NextLink from "next/link";
 import React from "react";
 import Layout from "../components/Layout";
+import Post from "../components/Post";
 import { PostsDocument, usePostsQuery } from "../generated/graphql";
 import { addApolloState, initializeApollo } from "../utils/apolloClient";
 
@@ -35,34 +33,7 @@ export default function Index() {
       <>
         <Stack spacing={8}>
           {posts.map((post) => (
-            <Flex key={post.id} p={5} shadow="md" borderWidth={1}>
-              <Flex
-                flexDirection="column"
-                mr={4}
-                justifyContent="space-around"
-                alignItems="center"
-                flexShrink={0}
-              >
-                <IconButton
-                  aria-label="Up vote"
-                  icon={<ChevronUpIcon />}
-                ></IconButton>
-                <Text fontSize="lg" fontWeight="bold">
-                  {post.points}
-                </Text>
-                <IconButton
-                  aria-label="Down vote"
-                  icon={<ChevronDownIcon />}
-                ></IconButton>
-              </Flex>
-              <Box>
-                <Heading fontSize="xl">{post.title}</Heading>
-                <Text mt={4}>{post.textSnippet}</Text>
-                <Text mt={4} textColor="gray.500" fontStyle="italic">
-                  posted by {post.author.username}
-                </Text>
-              </Box>
-            </Flex>
+            <Post key={post.id} post={post} />
           ))}
         </Stack>
 

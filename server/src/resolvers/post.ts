@@ -23,6 +23,16 @@ export class PostResolver {
     return root.text.slice(0, 50);
   }
 
+  @FieldResolver(() => Int, { nullable: true })
+  async voteStatus(
+    @Root() root: Post,
+    @Ctx() { req }: MyContext
+  ): Promise<number | undefined> {
+    const userId = req.session?.userId;
+    const updoot = await Updoot.findOne({ where: { postId: root.id, userId } });
+    return updoot?.value;
+  }
+
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
   async vote(
@@ -33,15 +43,31 @@ export class PostResolver {
     const isUpdoot = value !== -1;
     const realValue = isUpdoot ? 1 : -1;
     const userId = req.session?.userId;
+
+    const existingUpdoot = await Updoot.findOne({ where: { postId, userId } });
+
     const updoot = Updoot.create({
       userId,
       postId,
       value: realValue,
     });
-    await getConnection().transaction(async (manager) => {
-      await manager.save(updoot);
-      await manager.increment(Post, { id: postId }, "points", realValue);
-    });
+
+    if (existingUpdoot && existingUpdoot.value !== realValue) {
+      await getConnection().transaction(async (manager) => {
+        await manager.save(updoot);
+        await manager.increment(
+          Post,
+          { id: postId },
+          "points",
+          realValue - existingUpdoot.value
+        );
+      });
+    } else if (!existingUpdoot) {
+      await getConnection().transaction(async (manager) => {
+        await manager.save(updoot);
+        await manager.increment(Post, { id: postId }, "points", realValue);
+      });
+    }
     return true;
   }
 

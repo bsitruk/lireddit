@@ -1,15 +1,16 @@
 import { Request, Response } from "express";
 import { Redis } from "ioredis";
 
-type MySession = Express.Session &
-  Partial<{
-    userId: number;
-  }>;
-
-export type MyRequest = Request & { session?: MySession };
+declare global {
+  namespace Express {
+    interface Session {
+      userId: number;
+    }
+  }
+}
 
 export type MyContext = {
-  req: MyRequest;
+  req: Request;
   res: Response;
   redis: Redis;
 };

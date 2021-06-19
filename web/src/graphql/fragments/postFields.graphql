@@ -1,0 +1,11 @@
+fragment postFields on Post {
+  id
+  title
+  textSnippet
+  points
+  voteStatus
+  author {
+    id
+    username
+  }
+}
